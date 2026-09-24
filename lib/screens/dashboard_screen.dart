@@ -212,6 +212,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _cycleTripStatus(TripModel trip) {
+    setState(() {
+      if (trip.status == 'مجدولة') {
+        trip.status = 'جاهزة للانطلاق';
+      } else if (trip.status == 'جاهزة للانطلاق') {
+        trip.status = 'في الطريق';
+      } else if (trip.status == 'في الطريق') {
+        trip.status = 'مكتملة';
+      } else {
+        trip.status = 'مجدولة';
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('تم تحديث حالة رحلة "${trip.route}" إلى "${trip.status}"'),
+        backgroundColor: AppColors.primaryDarkBlue,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // 1. Calculate Drivers metrics for today
     final int workingDriversCount = widget.drivers
         .where((d) => d.getDayStatus(_selectedDay) == AttendanceStatus.work)
@@ -427,10 +452,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // ========================================================
               // SECTION 1: السائقون العاملون اليوم (WORKING DRIVERS TODAY)
               // ========================================================
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(7),
@@ -473,26 +502,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
 
                   // Filter Chips for Drivers
-                  Row(
-                    children: [
-                      _buildChip(
-                        label: 'العاملون ($workingDriversCount)',
-                        isSelected: _driverFilter == 'working',
-                        onTap: () => setState(() => _driverFilter = 'working'),
-                      ),
-                      const SizedBox(width: 6),
-                      _buildChip(
-                        label: 'الكل (${widget.drivers.length})',
-                        isSelected: _driverFilter == 'all',
-                        onTap: () => setState(() => _driverFilter = 'all'),
-                      ),
-                      const SizedBox(width: 6),
-                      _buildChip(
-                        label: 'في راحة ($restDriversCount)',
-                        isSelected: _driverFilter == 'rest',
-                        onTap: () => setState(() => _driverFilter = 'rest'),
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildChip(
+                          label: 'العاملون ($workingDriversCount)',
+                          isSelected: _driverFilter == 'working',
+                          onTap: () => setState(() => _driverFilter = 'working'),
+                        ),
+                        const SizedBox(width: 6),
+                        _buildChip(
+                          label: 'الكل (${widget.drivers.length})',
+                          isSelected: _driverFilter == 'all',
+                          onTap: () => setState(() => _driverFilter = 'all'),
+                        ),
+                        const SizedBox(width: 6),
+                        _buildChip(
+                          label: 'في راحة ($restDriversCount)',
+                          isSelected: _driverFilter == 'rest',
+                          onTap: () => setState(() => _driverFilter = 'rest'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -582,10 +615,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // ========================================================
               // SECTION 2: الرحلات المبرمجة اليوم (TODAY'S SCHEDULED TRIPS)
               // ========================================================
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(7),

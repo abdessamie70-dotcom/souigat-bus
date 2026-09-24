@@ -28,10 +28,10 @@ class TopKpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.borderLight, width: 1.2),
         boxShadow: const [
           BoxShadow(
@@ -54,7 +54,7 @@ class TopKpiCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
                   ),
@@ -62,47 +62,50 @@ class TopKpiCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 4),
               Container(
-                width: 38,
-                height: 38,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   color: iconBgColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(9),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: iconColor, size: 17),
               ),
             ],
           ),
-          const SizedBox(height: 12),
 
           // Main Value + Unit
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              if (unit != null) ...[
-                const SizedBox(width: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
                 Text(
-                  unit!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: iconColor,
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
                   ),
                 ),
+                if (unit != null) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    unit!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: iconColor,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
 
           // Bottom Row: Subtitle + Trend Badge
           Row(
@@ -112,7 +115,7 @@ class TopKpiCard extends StatelessWidget {
                 child: Text(
                   subtitle,
                   style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textMuted,
                   ),
@@ -120,9 +123,10 @@ class TopKpiCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (trendBadge != null)
+              if (trendBadge != null) ...[
+                const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
                     color: isTrendPositive ? AppColors.greenLight : AppColors.redLight,
                     borderRadius: BorderRadius.circular(6),
@@ -130,12 +134,13 @@ class TopKpiCard extends StatelessWidget {
                   child: Text(
                     trendBadge!,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: FontWeight.w800,
                       color: isTrendPositive ? AppColors.accentGreen : AppColors.accentRed,
                     ),
                   ),
                 ),
+              ],
             ],
           ),
         ],

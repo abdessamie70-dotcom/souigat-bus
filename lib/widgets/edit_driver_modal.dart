@@ -82,6 +82,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
           assignedBus: _busController.text.trim(),
           licenseType: _licenseController.text.trim(),
           dailyWage: wage,
+          rating: 5.0,
           currentPattern: _selectedPattern,
         );
         newDriver.monthlyAttendance[DateTime.now().day] = AttendanceStatus.work;

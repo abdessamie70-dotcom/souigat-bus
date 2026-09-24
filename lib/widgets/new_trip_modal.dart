@@ -22,7 +22,8 @@ class _NewTripModalState extends State<NewTripModal> {
   final _routeController = TextEditingController(text: 'أدرار ⟵ بشار');
   final _manualDriverController = TextEditingController();
   final _passengersController = TextEditingController(text: '45');
-  final _revenueController = TextEditingController(text: '58500');
+  final _seatPriceController = TextEditingController(text: '1200');
+  final _extraAmountController = TextEditingController(text: '3500');
   final _driverWageController = TextEditingController(text: '4000');
 
   int? _selectedDriverIndex;
@@ -40,6 +41,8 @@ class _NewTripModalState extends State<NewTripModal> {
     super.initState();
     if (widget.drivers.isNotEmpty) {
       _selectedDriverIndex = 0;
+      // Pre-fill driver daily wage if available
+      _driverWageController.text = widget.drivers[0].dailyWage.toInt().toString();
     } else {
       _manualDriverController.text = 'سائق المؤسسة';
     }
@@ -50,16 +53,27 @@ class _NewTripModalState extends State<NewTripModal> {
     _routeController.dispose();
     _manualDriverController.dispose();
     _passengersController.dispose();
-    _revenueController.dispose();
+    _seatPriceController.dispose();
+    _extraAmountController.dispose();
     _driverWageController.dispose();
     super.dispose();
   }
 
+  int get _passengers => int.tryParse(_passengersController.text) ?? 0;
+  double get _seatPrice => double.tryParse(_seatPriceController.text) ?? 0.0;
+  double get _extraAmount => double.tryParse(_extraAmountController.text) ?? 0.0;
+  double get _driverWage => double.tryParse(_driverWageController.text) ?? 0.0;
+
+  double get _seatsRevenue => _passengers * _seatPrice;
+  double get _totalRevenue => _seatsRevenue + _extraAmount;
+  double get _netTripIncome => _totalRevenue - _driverWage;
+
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      final passengers = int.tryParse(_passengersController.text) ?? 45;
-      final revenue = double.tryParse(_revenueController.text) ?? 50000;
-      final wage = double.tryParse(_driverWageController.text) ?? 4000;
+      final passengers = _passengers;
+      final seatPrice = _seatPrice;
+      final extraAmount = _extraAmount;
+      final wage = _driverWage;
 
       final String driverName = (widget.drivers.isNotEmpty && _selectedDriverIndex != null)
           ? widget.drivers[_selectedDriverIndex!].name
@@ -71,7 +85,8 @@ class _NewTripModalState extends State<NewTripModal> {
         busPlate: _selectedBus.split('(').last.replaceAll(')', ''),
         driverName: driverName.isNotEmpty ? driverName : 'سائق غير معيّن',
         passengers: passengers,
-        ticketRevenue: revenue,
+        seatPrice: seatPrice,
+        extraAmount: extraAmount,
         driverWage: wage,
         date: DateTime.now(),
         status: 'مجدولة',
@@ -211,14 +226,15 @@ class _NewTripModalState extends State<NewTripModal> {
               ),
               const SizedBox(height: 12),
 
-              // Passengers & Revenue Row
+              // Row 1: Passengers (المقاعد) & Seat Price (سعر المقعد)
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _passengersController,
                       keyboardType: TextInputType.number,
-                      decoration: _inputDecoration('عدد الركاب (من 50)', Icons.people_outline),
+                      decoration: _inputDecoration('عدد المقاعد / الركاب', Icons.airline_seat_recline_normal_rounded),
+                      onChanged: (_) => setState(() {}),
                       validator: (val) {
                         final num = int.tryParse(val ?? '');
                         if (num == null || num < 1 || num > 50) return 'بين 1 و 50';
@@ -229,24 +245,167 @@ class _NewTripModalState extends State<NewTripModal> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextFormField(
-                      controller: _revenueController,
+                      controller: _seatPriceController,
                       keyboardType: TextInputType.number,
-                      decoration: _inputDecoration('إجمالي التذاكر (دج)', Icons.monetization_on_outlined),
-                      validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                      decoration: _inputDecoration('سعر المقعد (دج)', Icons.monetization_on_outlined),
+                      onChanged: (_) => setState(() {}),
+                      validator: (val) {
+                        final p = double.tryParse(val ?? '');
+                        if (p == null || p < 0) return 'قيمة غير صالحة';
+                        return null;
+                      },
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // Driver Wage Input
-              TextFormField(
-                controller: _driverWageController,
-                keyboardType: TextInputType.number,
-                decoration: _inputDecoration('أجرة / مستحقات السائق للرحلة (دج)', Icons.account_balance_wallet_outlined),
-                validator: (val) => val == null || val.isEmpty ? 'يرجى إدخال الأجرة' : null,
+              // Row 2: Extra Amount (مبلغ إضافي) & Driver Wage (أجرة السائق)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _extraAmountController,
+                      keyboardType: TextInputType.number,
+                      decoration: _inputDecoration('مبلغ إضافي (طرود/أمتعة دج)', Icons.inventory_2_outlined),
+                      onChanged: (_) => setState(() {}),
+                      validator: (val) {
+                        if (val != null && val.isNotEmpty && double.tryParse(val) == null) {
+                          return 'قيمة غير صالحة';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _driverWageController,
+                      keyboardType: TextInputType.number,
+                      decoration: _inputDecoration('أجرة السائق (دج)', Icons.account_balance_wallet_outlined),
+                      onChanged: (_) => setState(() {}),
+                      validator: (val) => val == null || val.isEmpty ? 'مطلوب' : null,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
+
+              // Dynamic Revenue Calculation Card (حساب إجمالي الإيرادات اللحظي)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.borderBlue),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'تفصيل وحساب إيرادات الرحلة:',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.blueLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'حساب فوري تلقائي ⚡',
+                            style: const TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.accentBlue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Divider(height: 1, color: AppColors.borderLight),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'إيراد المقاعد ($_passengers مقعد × ${_seatPrice.toInt()} دج):',
+                          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '${_seatsRevenue.toInt()} دج',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'مبلغ إضافي (شحن طرود وأمتعة):',
+                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          '+${_extraAmount.toInt()} دج',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.accentOrange),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.borderLight),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'إجمالي إيراد الرحلة:',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.primaryDarkBlue),
+                          ),
+                          Text(
+                            '${_totalRevenue.toInt()} دج',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.accentGreen),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_driverWage > 0) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'صافي بعد خصم أجرة السائق (${_driverWage.toInt()} دج):',
+                            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            '${_netTripIncome.toInt()} دج',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: _netTripIncome >= 0 ? AppColors.accentBlue : AppColors.accentRed,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // Submit Button
               ElevatedButton.icon(

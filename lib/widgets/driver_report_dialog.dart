@@ -52,7 +52,6 @@ class DriverReportDialog extends StatelessWidget {
     final int workDays = driver.workDaysCount;
     final int restDays = driver.restDaysCount;
     final int absenceDays = driver.absenceDaysCount;
-    final double totalWages = driver.totalMonthlyWages;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -168,6 +167,15 @@ class DriverReportDialog extends StatelessWidget {
                               _infoRow('رقم الهاتف:', driver.phone, 'رخصة السياقة:', driver.licenseType),
                               const SizedBox(height: 6),
                               _infoRow('نظام المناوبة:', driver.currentPattern.title, 'أجر اليومية:', '${driver.dailyWage.toInt()} دج'),
+                              if (driver.loanAmount > 0) ...[
+                                const SizedBox(height: 6),
+                                _infoRow(
+                                  'إجمالي المستحق:',
+                                  '${driver.grossMonthlyWages.toInt()} دج',
+                                  'سلفة / قرض مخصوم:',
+                                  '-${driver.loanAmount.toInt()} دج',
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -187,7 +195,9 @@ class DriverReportDialog extends StatelessWidget {
                               _statItem('أيام العمل', '$workDays يوم', AppColors.accentGreen),
                               _statItem('أيام الراحة', '$restDays يوم', AppColors.accentAmber),
                               _statItem('أيام الغياب', '$absenceDays يوم', AppColors.accentRed),
-                              _statItem('المستحق الصافي', '${totalWages.toInt()} دج', Colors.white),
+                              if (driver.loanAmount > 0)
+                                _statItem('خصم سلفة', '-${driver.loanAmount.toInt()} دج', AppColors.accentOrange),
+                              _statItem('المستحق الصافي', '${driver.netMonthlyWages.toInt()} دج', Colors.white),
                             ],
                           ),
                         ),

@@ -3,9 +3,10 @@ class TripModel {
   final String route;
   final String busPlate;
   final String driverName;
-  final int passengers; // Max 50
-  final double ticketRevenue; // In DZD (دج)
-  final double driverWage; // أجرة السائق للرحلة بالدينار دج (بدون وقود)
+  final int passengers; // عدد المقاعد المحجوزة / الركاب (الحد الأقصى 50)
+  final double seatPrice; // سعر المقعد الواحد بالدينار (دج)
+  final double extraAmount; // خانة مبلغ إضافي (شحن طرود / أمتعة زائدة دج)
+  final double driverWage; // أجرة السائق للرحلة بالدينار دج
   final DateTime date;
   String status; // 'مكتملة', 'في الطريق', 'مجدولة', 'جاهزة للانطلاق'
   final String departureTime;
@@ -18,17 +19,30 @@ class TripModel {
     required this.busPlate,
     required this.driverName,
     required this.passengers,
-    required this.ticketRevenue,
+    this.seatPrice = 1200.0,
+    this.extraAmount = 0.0,
+    double? ticketRevenue,
     this.driverWage = 4000,
     required this.date,
     required this.status,
     this.departureTime = '08:00 ص',
     this.arrivalTime = '16:00 م',
     this.busModel = 'مرسيدس ترافيكو',
-  });
+  }) : _customRevenue = ticketRevenue;
 
-  // Net revenue for the establishment directly (Revenue - Driver Wage, no fuel!)
-  double get netIncome => ticketRevenue - driverWage;
+  final double? _customRevenue;
+
+  // إيراد المقاعد = عدد المقاعد × سعر المقعد الواحد
+  double get seatsRevenue => passengers * seatPrice;
+
+  // إجمالي إيرادات الرحلة = إيراد المقاعد + المبلغ الإضافي
+  double get totalRevenue => _customRevenue ?? (seatsRevenue + extraAmount);
+
+  // متوافق مع الاستخدامات السابقة
+  double get ticketRevenue => totalRevenue;
+
+  // صافي الدخل من الرحلة = الإجمالي - مستحقات السائق
+  double get netIncome => totalRevenue - driverWage;
   double get occupancyPercentage => (passengers / 50.0) * 100.0;
 
   TripModel copyWith({
@@ -37,6 +51,8 @@ class TripModel {
     String? busPlate,
     String? driverName,
     int? passengers,
+    double? seatPrice,
+    double? extraAmount,
     double? ticketRevenue,
     double? driverWage,
     DateTime? date,
@@ -51,6 +67,8 @@ class TripModel {
       busPlate: busPlate ?? this.busPlate,
       driverName: driverName ?? this.driverName,
       passengers: passengers ?? this.passengers,
+      seatPrice: seatPrice ?? this.seatPrice,
+      extraAmount: extraAmount ?? this.extraAmount,
       ticketRevenue: ticketRevenue ?? this.ticketRevenue,
       driverWage: driverWage ?? this.driverWage,
       date: date ?? this.date,

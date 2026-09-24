@@ -24,6 +24,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
   late TextEditingController _busController;
   late TextEditingController _licenseController;
   late TextEditingController _wageController;
+  late TextEditingController _loanController;
   late ShiftPattern _selectedPattern;
 
   bool get isEditing => widget.driver != null;
@@ -47,7 +48,12 @@ class _EditDriverModalState extends State<EditDriverModal> {
     _wageController = TextEditingController(
       text: widget.driver != null ? widget.driver!.dailyWage.toInt().toString() : '4000',
     );
-    _selectedPattern = widget.driver?.currentPattern ?? ShiftPattern.dayByDay;
+    _loanController = TextEditingController(
+      text: widget.driver != null && widget.driver!.loanAmount > 0
+          ? widget.driver!.loanAmount.toInt().toString()
+          : '0',
+    );
+    _selectedPattern = widget.driver?.currentPattern ?? ShiftPattern.oneWorkOneRest;
   }
 
   @override
@@ -57,12 +63,14 @@ class _EditDriverModalState extends State<EditDriverModal> {
     _busController.dispose();
     _licenseController.dispose();
     _wageController.dispose();
+    _loanController.dispose();
     super.dispose();
   }
 
   void _saveDriver() {
     if (_formKey.currentState?.validate() ?? false) {
       final double wage = double.tryParse(_wageController.text) ?? 4000;
+      final double loan = double.tryParse(_loanController.text) ?? 0.0;
 
       if (isEditing) {
         widget.driver!.updateDetails(
@@ -71,6 +79,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
           newLicenseType: _licenseController.text.trim(),
           newAssignedBus: _busController.text.trim(),
           newDailyWage: wage,
+          newLoanAmount: loan,
           newPattern: _selectedPattern,
         );
         widget.onDriverSaved(widget.driver!);
@@ -82,6 +91,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
           assignedBus: _busController.text.trim(),
           licenseType: _licenseController.text.trim(),
           dailyWage: wage,
+          loanAmount: loan,
           rating: 5.0,
           currentPattern: _selectedPattern,
         );
@@ -350,9 +360,48 @@ class _EditDriverModalState extends State<EditDriverModal> {
                   ),
                 ],
               ),
+              const SizedBox(height: 14),
+
+              // 5. Loan / Advance Input Field (سلفة أو قرض يخصم من الأجرة)
+              TextFormField(
+                controller: _loanController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.accentRed,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'المبلغ المقترض / سلفة تخصم من الأجرة (دج)',
+                  hintText: '0',
+                  helperText: 'يُخصم هذا المبلغ تلقائياً من إجمالي الأجرة الشهرية في الحساب والكشف الرسمي',
+                  helperStyle: const TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  prefixIcon: const Icon(Icons.money_off_rounded, color: AppColors.accentRed, size: 20),
+                  filled: true,
+                  fillColor: AppColors.backgroundLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.borderLight),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.borderLight),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.accentRed, width: 1.5),
+                  ),
+                ),
+                validator: (val) {
+                  if (val != null && val.isNotEmpty && double.tryParse(val) == null) {
+                    return 'يرجى إدخال مبلغ صحيح';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 16),
 
-              // 5. Shift Pattern Selection (نظام المناوبة المعتمد)
+              // 6. Shift Pattern Selection (نظام المناوبة المعتمد)
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -363,59 +412,99 @@ class _EditDriverModalState extends State<EditDriverModal> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'نظام المناوبة المعتمد للسائق:',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          'نظام المناوبة المعتمد للسائق:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'تطبيق تلقائي على الجدول ⚡',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accentOrange,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 2.8,
                       children: ShiftPattern.values.map((pattern) {
                         final bool isSelected = _selectedPattern == pattern;
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedPattern = pattern;
-                                });
-                              },
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              _selectedPattern = pattern;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.accentBlue : Colors.white,
                               borderRadius: BorderRadius.circular(10),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? AppColors.accentBlue : Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: isSelected ? AppColors.accentBlue : AppColors.borderLight,
-                                  ),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                            color: AppColors.accentBlue.withValues(alpha: 0.25),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 2),
-                                          )
-                                        ]
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    pattern.title,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
+                              border: Border.all(
+                                color: isSelected ? AppColors.accentBlue : AppColors.borderLight,
+                                width: isSelected ? 1.5 : 1,
                               ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.accentBlue.withValues(alpha: 0.25),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                                  size: 16,
+                                  color: isSelected ? Colors.white : AppColors.textMuted,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        pattern.title,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        pattern.shortCode,
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w600,
+                                          color: isSelected ? Colors.white70 : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );

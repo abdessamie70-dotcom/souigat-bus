@@ -163,60 +163,40 @@ class MonthlyDaysGrid extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // 3 Shift Pattern Buttons
+                // 4 Shift Pattern Buttons in responsive grid
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final bool isNarrow = constraints.maxWidth < 450;
-                    return isNarrow
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildPatternButton(
-                                pattern: ShiftPattern.dayByDay,
-                                label: 'عمل يوم بيوم',
-                                icon: Icons.repeat_rounded,
-                              ),
-                              const SizedBox(height: 6),
-                              _buildPatternButton(
-                                pattern: ShiftPattern.oneWorkOneRest,
-                                label: 'عمل يوم وراحة يوم',
-                                icon: Icons.cached_rounded,
-                              ),
-                              const SizedBox(height: 6),
-                              _buildPatternButton(
-                                pattern: ShiftPattern.oneWorkTwoRest,
-                                label: 'عمل يوم وراحة يومان',
-                                icon: Icons.timelapse_rounded,
-                              ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: _buildPatternButton(
-                                  pattern: ShiftPattern.dayByDay,
-                                  label: 'عمل يوم بيوم',
-                                  icon: Icons.repeat_rounded,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: _buildPatternButton(
-                                  pattern: ShiftPattern.oneWorkOneRest,
-                                  label: 'عمل يوم وراحة يوم',
-                                  icon: Icons.cached_rounded,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: _buildPatternButton(
-                                  pattern: ShiftPattern.oneWorkTwoRest,
-                                  label: 'عمل يوم وراحة يومان',
-                                  icon: Icons.timelapse_rounded,
-                                ),
-                              ),
-                            ],
-                          );
+                    final bool isNarrow = constraints.maxWidth < 600;
+                    return GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: isNarrow ? 2 : 4,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: isNarrow ? 3.2 : 2.8,
+                      children: [
+                        _buildPatternButton(
+                          pattern: ShiftPattern.oneWorkOneRest,
+                          label: 'يوم عمل / يوم راحة',
+                          icon: Icons.cached_rounded,
+                        ),
+                        _buildPatternButton(
+                          pattern: ShiftPattern.twoWorkTwoRest,
+                          label: 'يومين عمل / يومين راحة',
+                          icon: Icons.repeat_rounded,
+                        ),
+                        _buildPatternButton(
+                          pattern: ShiftPattern.oneWorkTwoRest,
+                          label: 'يوم عمل / يومين راحة',
+                          icon: Icons.timelapse_rounded,
+                        ),
+                        _buildPatternButton(
+                          pattern: ShiftPattern.allWork,
+                          label: 'كل أيام عمل',
+                          icon: Icons.event_available_rounded,
+                        ),
+                      ],
+                    );
                   },
                 ),
               ],

@@ -107,28 +107,31 @@ class TripCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${trip.passengers} راكب',
+                '${trip.totalRevenue.toInt()} دج',
                 style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.accentGreen,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                trip.departureTime,
+                trip.extraAmount > 0
+                    ? '${trip.passengers} راكب (+${trip.extraAmount.toInt()} دج طرود)'
+                    : '${trip.passengers} راكب (${trip.seatPrice.toInt()} دج)',
                 style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primaryDarkBlue,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
                 ),
               ),
+              const SizedBox(height: 1),
               Text(
                 'أجرة السائق: ${trip.driverWage.toInt()} دج',
                 style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.accentGreen,
+                  color: AppColors.accentAmber,
                 ),
               ),
             ],

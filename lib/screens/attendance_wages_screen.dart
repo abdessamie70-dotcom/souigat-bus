@@ -170,7 +170,6 @@ class _AttendanceWagesScreenState extends State<AttendanceWagesScreen> {
     final int workDays = currentDriver.workDaysCount;
     final int restDays = currentDriver.restDaysCount;
     final int absenceDays = currentDriver.absenceDaysCount;
-    final double driverWages = currentDriver.totalMonthlyWages;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -370,14 +369,16 @@ class _AttendanceWagesScreenState extends State<AttendanceWagesScreen> {
                     isTrendPositive: false,
                   ),
                   TopKpiCard(
-                    title: 'مستحقات وأجر السائق',
-                    value: driverWages.toInt().toString(),
+                    title: currentDriver.loanAmount > 0 ? 'صافي أجر السائق' : 'مستحقات وأجر السائق',
+                    value: currentDriver.netMonthlyWages.toInt().toString(),
                     unit: 'دج',
-                    subtitle: '$workDays يوم × ${currentDriver.dailyWage.toInt()} دج',
+                    subtitle: currentDriver.loanAmount > 0
+                        ? 'إجمالي: ${currentDriver.grossMonthlyWages.toInt()} دج • سلفة: -${currentDriver.loanAmount.toInt()} دج'
+                        : '$workDays يوم × ${currentDriver.dailyWage.toInt()} دج',
                     icon: Icons.account_balance_wallet_rounded,
                     iconColor: AppColors.primaryDarkBlue,
                     iconBgColor: AppColors.surfaceLight,
-                    trendBadge: 'حساب الشهر',
+                    trendBadge: currentDriver.loanAmount > 0 ? 'مخصوم سلفة 🔻' : 'حساب الشهر',
                     isTrendPositive: true,
                   ),
                 ],

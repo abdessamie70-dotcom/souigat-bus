@@ -9,6 +9,8 @@ class TodayDriverCard extends StatelessWidget {
   final TripModel? activeTrip;
   final Function(AttendanceStatus newStatus) onStatusChanged;
   final VoidCallback? onEditDriver;
+  final VoidCallback? onDeleteDriver;
+  final VoidCallback? onPrintReport;
 
   const TodayDriverCard({
     super.key,
@@ -17,6 +19,8 @@ class TodayDriverCard extends StatelessWidget {
     this.activeTrip,
     required this.onStatusChanged,
     this.onEditDriver,
+    this.onDeleteDriver,
+    this.onPrintReport,
   });
 
   @override
@@ -192,33 +196,80 @@ class TodayDriverCard extends StatelessWidget {
                   ),
                 ),
 
+                if (onPrintReport != null) ...[
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: onPrintReport,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryDarkBlue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.print_rounded, size: 12, color: Colors.white),
+                          SizedBox(width: 3),
+                          Text(
+                            'كشف',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+
                 if (onEditDriver != null) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   InkWell(
                     onTap: onEditDriver,
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
-                        color: AppColors.orangeLight,
+                        color: AppColors.blueLight,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.accentOrange.withOpacity(0.3)),
+                        border: Border.all(color: AppColors.borderBlue),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: const [
-                          Icon(Icons.edit_rounded, size: 12, color: AppColors.accentOrange),
+                          Icon(Icons.edit_rounded, size: 12, color: AppColors.accentBlue),
                           SizedBox(width: 4),
                           Text(
                             'تعديل',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.accentOrange,
+                              color: AppColors.accentBlue,
                             ),
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                ],
+
+                if (onDeleteDriver != null) ...[
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: onDeleteDriver,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppColors.redLight,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.accentRed.withValues(alpha: 0.3)),
+                      ),
+                      child: const Icon(Icons.delete_outline_rounded, size: 14, color: AppColors.accentRed),
                     ),
                   ),
                 ],

@@ -3,13 +3,11 @@ import '../theme/app_colors.dart';
 
 class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onDriversTap;
-  final VoidCallback onBookingTap;
   final VoidCallback onNotificationsTap;
 
   const CustomDashboardAppBar({
     super.key,
     required this.onDriversTap,
-    required this.onBookingTap,
     required this.onNotificationsTap,
   });
 
@@ -33,14 +31,14 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
             children: [
               // Company Logo Image & Branding Badge
               Container(
-                width: 44,
-                height: 44,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.borderLight, width: 1.5),
+                  border: Border.all(color: AppColors.borderBlue, width: 1.5),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x1A152238),
+                      color: Color(0x151E40AF),
                       blurRadius: 8,
                       offset: Offset(0, 3),
                     ),
@@ -55,7 +53,7 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                       color: AppColors.primaryDarkBlue,
                       child: const Icon(
                         Icons.directions_bus_rounded,
-                        color: AppColors.accentOrange,
+                        color: AppColors.accentBlue,
                         size: 24,
                       ),
                     ),
@@ -92,15 +90,16 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.orangeLight,
+                            color: AppColors.blueLight,
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.borderBlue),
                           ),
                           child: const Text(
                             'نقل المسافرين',
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.accentOrange,
+                              color: AppColors.accentBlue,
                             ),
                           ),
                         ),
@@ -108,10 +107,10 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'نظام متابعة سائقي الحافلات والرحلات',
+                      'نظام متابعة سائقي الحافلات والرحلات اليومية',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.textSecondary,
                       ),
                       maxLines: 1,
@@ -121,41 +120,39 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                 ),
               ),
 
-              // Quick Actions & User Controls
+              // Quick Actions: إدارة السائقين & Profile
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Quick Action: بوابة الحجز
+                  // Quick Action: إدارة السائقين
                   InkWell(
-                    onTap: onBookingTap,
+                    onTap: onDriversTap,
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                        horizontal: 11,
+                        vertical: 7,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.orangeLight,
+                        color: AppColors.blueLight,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.accentOrange.withOpacity(0.3),
-                        ),
+                        border: Border.all(color: AppColors.borderBlue),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: const [
                           Icon(
-                            Icons.confirmation_number_outlined,
-                            size: 15,
-                            color: AppColors.accentOrange,
+                            Icons.group_rounded,
+                            size: 16,
+                            color: AppColors.accentBlue,
                           ),
-                          SizedBox(width: 4),
+                          SizedBox(width: 5),
                           Text(
-                            'بوابة الحجز',
+                            'إدارة السائقين',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.accentOrange,
+                              color: AppColors.accentBlue,
                             ),
                           ),
                         ],
@@ -163,51 +160,6 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                     ),
                   ),
                   const SizedBox(width: 8),
-
-                  // Quick Action: إدارة السائقين (Shown if space allows)
-                  LayoutBuilder(
-                    builder: (context, c) {
-                      final bool isWide = MediaQuery.of(context).size.width > 500;
-                      if (!isWide) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: InkWell(
-                          onTap: onDriversTap,
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceLight,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: AppColors.borderLight),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(
-                                  Icons.badge_outlined,
-                                  size: 15,
-                                  color: AppColors.textPrimary,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'إدارة السائقين',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
 
                   // Notification Bell with Badge
                   Stack(
@@ -231,7 +183,7 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                            color: AppColors.accentRed,
+                            color: AppColors.accentBlue,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -245,9 +197,9 @@ class CustomDashboardAppBar extends StatelessWidget implements PreferredSizeWidg
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryDarkBlue,
+                      color: AppColors.accentBlue,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.borderLight, width: 2),
+                      border: Border.all(color: AppColors.borderBlue, width: 2),
                     ),
                     child: const Center(
                       child: Text(

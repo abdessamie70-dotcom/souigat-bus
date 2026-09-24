@@ -5,11 +5,13 @@ import '../theme/app_colors.dart';
 class TodayTripCard extends StatelessWidget {
   final TripModel trip;
   final VoidCallback? onStatusToggle;
+  final VoidCallback? onDeleteTrip;
 
   const TodayTripCard({
     super.key,
     required this.trip,
     this.onStatusToggle,
+    this.onDeleteTrip,
   });
 
   @override
@@ -140,32 +142,51 @@ class TodayTripCard extends StatelessWidget {
                 ),
 
                 // Status Badge (Interactive Click to update status)
-                InkWell(
-                  onTap: onStatusToggle,
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: statusBg,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: onStatusToggle,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: statusColor.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(statusIcon, size: 13, color: statusColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          trip.status,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: statusColor,
-                          ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: statusBg,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(statusIcon, size: 13, color: statusColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              trip.status,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: statusColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                    if (onDeleteTrip != null) ...[
+                      const SizedBox(width: 6),
+                      IconButton(
+                        onPressed: onDeleteTrip,
+                        icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.accentRed),
+                        tooltip: 'حذف الرحلة',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.redLight,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),

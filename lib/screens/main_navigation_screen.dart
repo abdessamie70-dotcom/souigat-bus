@@ -4,7 +4,6 @@ import '../models/trip_model.dart';
 import '../theme/app_colors.dart';
 import '../widgets/custom_app_bar.dart';
 import 'attendance_wages_screen.dart';
-import 'booking_screen.dart';
 import 'daily_trips_screen.dart';
 import 'dashboard_screen.dart';
 import 'drivers_screen.dart';
@@ -19,14 +18,27 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
+  // Empty initial state as requested by the user
   late List<DriverModel> _drivers;
   late List<TripModel> _trips;
 
   @override
   void initState() {
     super.initState();
-    _drivers = DriverModel.defaultDrivers();
-    _trips = TripModel.sampleTrips();
+    _drivers = [];
+    _trips = [];
+  }
+
+  void _onDriverAdded(DriverModel newDriver) {
+    setState(() {
+      _drivers.add(newDriver);
+    });
+  }
+
+  void _onDriverDeleted(int index) {
+    setState(() {
+      _drivers.removeAt(index);
+    });
   }
 
   void _onDriverUpdated(int index, DriverModel updatedDriver) {
@@ -43,10 +55,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('تم تسجيل رحلة "${newTrip.route}" بنجاح'),
-        backgroundColor: AppColors.accentGreen,
+        backgroundColor: AppColors.accentBlue,
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  void _onTripDeleted(int index) {
+    setState(() {
+      _trips.removeAt(index);
+    });
   }
 
   void _onDriverDayStatusChanged(int driverIndex, int day, AttendanceStatus newStatus) {
@@ -65,7 +83,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         content: Text(
           'تم تطبيق نظام "${pattern.title}" على أيام الشهر للسائق ${_drivers[driverIndex].name}',
         ),
-        backgroundColor: AppColors.accentGreen,
+        backgroundColor: AppColors.accentBlue,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -73,29 +91,30 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 3 Main Screens requested in bottom bar:
-    // 1. الرئيسية
-    // 2. حضور وأجور السائقين
-    // 3. سجل الرحلات اليومي
     final List<Widget> screens = [
       DashboardScreen(
         drivers: _drivers,
         trips: _trips,
         onTripAdded: _onTripAdded,
+        onTripDeleted: _onTripDeleted,
         onDriverDayStatusChanged: _onDriverDayStatusChanged,
         onApplyShiftPattern: _onApplyShiftPattern,
         onDriverUpdated: _onDriverUpdated,
+        onDriverAdded: _onDriverAdded,
+        onDriverDeleted: _onDriverDeleted,
       ),
       AttendanceWagesScreen(
         drivers: _drivers,
         onDriverDayStatusChanged: _onDriverDayStatusChanged,
         onApplyShiftPattern: _onApplyShiftPattern,
         onDriverUpdated: _onDriverUpdated,
+        onDriverAdded: _onDriverAdded,
       ),
       DailyTripsScreen(
         trips: _trips,
         drivers: _drivers,
         onTripAdded: _onTripAdded,
+        onTripDeleted: _onTripDeleted,
       ),
     ];
 
@@ -110,27 +129,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 child: DriversScreen(
                   drivers: _drivers,
                   onDriverUpdated: _onDriverUpdated,
-                ),
-              ),
-            ),
-          );
-        },
-        onBookingTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => Scaffold(
-                appBar: AppBar(
-                  title: const Text(
-                    'بوابة الحجز',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                  ),
-                  backgroundColor: AppColors.cardWhite,
-                  foregroundColor: AppColors.textPrimary,
-                  elevation: 0.5,
-                ),
-                body: const Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: BookingPortalScreen(),
+                  onDriverAdded: _onDriverAdded,
+                  onDriverDeleted: _onDriverDeleted,
                 ),
               ),
             ),
@@ -164,7 +164,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: AppColors.accentOrange,
+          selectedItemColor: AppColors.accentBlue,
           unselectedItemColor: AppColors.textSecondary,
           selectedFontSize: 12,
           unselectedFontSize: 11,

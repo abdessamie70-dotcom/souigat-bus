@@ -9,12 +9,14 @@ class DailyTripsScreen extends StatefulWidget {
   final List<TripModel> trips;
   final List<DriverModel> drivers;
   final Function(TripModel newTrip, int driverIndex) onTripAdded;
+  final Function(int tripIndex)? onTripDeleted;
 
   const DailyTripsScreen({
     super.key,
     required this.trips,
     required this.drivers,
     required this.onTripAdded,
+    this.onTripDeleted,
   });
 
   @override
@@ -33,6 +35,53 @@ class _DailyTripsScreenState extends State<DailyTripsScreen> {
       builder: (ctx) => NewTripModal(
         drivers: widget.drivers,
         onTripAdded: widget.onTripAdded,
+      ),
+    );
+  }
+
+  void _confirmDeleteTrip(int index, TripModel trip) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.delete_outline_rounded, color: AppColors.accentRed),
+            SizedBox(width: 8),
+            Text('تأكيد حذف الرحلة', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          'هل تريد حذف رحلة "${trip.route}" المجدولة على الساعة ${trip.departureTime}؟',
+          style: const TextStyle(fontSize: 13, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('إلغاء', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              widget.onTripDeleted?.call(index);
+              setState(() {});
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('تم حذف رحلة "${trip.route}" بنجاح'),
+                  backgroundColor: AppColors.accentRed,
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accentRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('حذف الرحلة', style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
       ),
     );
   }
@@ -112,7 +161,7 @@ class _DailyTripsScreenState extends State<DailyTripsScreen> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentOrange,
+                        backgroundColor: AppColors.accentBlue,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         shape: RoundedRectangleBorder(
@@ -175,23 +224,57 @@ class _DailyTripsScreenState extends State<DailyTripsScreen> {
           ),
           const SizedBox(height: 14),
 
-          // Trips List
+          // Trips List or Empty State
           if (filteredTrips.isEmpty)
             Container(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.borderLight),
+                boxShadow: AppColors.softShadow,
               ),
               child: Column(
-                children: const [
-                  Icon(Icons.directions_bus_outlined, size: 40, color: AppColors.textMuted),
-                  SizedBox(height: 8),
-                  Text(
-                    'لا توجد رحلات مطابقة للبحث',
-                    style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: AppColors.blueLight,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.borderBlue),
+                    ),
+                    child: const Icon(Icons.alt_route_rounded, size: 30, color: AppColors.accentBlue),
                   ),
+                  const SizedBox(height: 14),
+                  Text(
+                    widget.trips.isEmpty ? 'لا توجد رحلات مبرمجة حالياً' : 'لا توجد رحلات مطابقة للبحث',
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.trips.isEmpty
+                        ? 'يمكنك البدء ببرمجة رحلات حافلات المؤسسة وتحديد المسارات والسائقين'
+                        : 'جرّب كتابة اسم مسار أو سائق أو رقم حافلة آخر',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (widget.trips.isEmpty) ...[
+                    const SizedBox(height: 18),
+                    ElevatedButton.icon(
+                      onPressed: _openNewTripModal,
+                      icon: const Icon(Icons.add_rounded, size: 18, color: Colors.white),
+                      label: const Text(
+                        '+ برمجة رحلة جديدة',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accentBlue,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             )
@@ -201,7 +284,14 @@ class _DailyTripsScreenState extends State<DailyTripsScreen> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: filteredTrips.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (ctx, idx) => TripCard(trip: filteredTrips[idx]),
+              itemBuilder: (ctx, idx) {
+                final trip = filteredTrips[idx];
+                final originalIndex = widget.trips.indexOf(trip);
+                return TripCard(
+                  trip: trip,
+                  onDeleteTrip: () => _confirmDeleteTrip(originalIndex, trip),
+                );
+              },
             ),
           const SizedBox(height: 24),
         ],

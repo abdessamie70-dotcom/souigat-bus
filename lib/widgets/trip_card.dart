@@ -4,8 +4,9 @@ import '../theme/app_colors.dart';
 
 class TripCard extends StatelessWidget {
   final TripModel trip;
+  final VoidCallback? onDeleteTrip;
 
-  const TripCard({super.key, required this.trip});
+  const TripCard({super.key, required this.trip, this.onDeleteTrip});
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +133,21 @@ class TripCard extends StatelessWidget {
               ),
             ],
           ),
+
+          if (onDeleteTrip != null) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: onDeleteTrip,
+              icon: const Icon(Icons.delete_outline_rounded, color: AppColors.accentRed, size: 18),
+              tooltip: 'حذف الرحلة',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.redLight,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -66,12 +66,12 @@ class MonthlyDaysGrid extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      color: AppColors.orangeLight,
+                      color: AppColors.blueLight,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.calendar_view_month_rounded,
-                      color: AppColors.accentOrange,
+                      color: AppColors.accentBlue,
                       size: 20,
                     ),
                   ),
@@ -100,12 +100,12 @@ class MonthlyDaysGrid extends StatelessWidget {
                 ],
               ),
 
-              // Prominent Print Report Button (طباعة التقرير)
+              // Prominent Print Report Button (طباعة وتحميل كشف السائق)
               ElevatedButton.icon(
                 onPressed: onPrintReport,
                 icon: const Icon(Icons.print_rounded, size: 16, color: Colors.white),
                 label: const Text(
-                  'طباعة التقرير',
+                  'كشف السائق (طباعة / تحميل)',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,

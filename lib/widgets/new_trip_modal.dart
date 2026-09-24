@@ -20,11 +20,12 @@ class NewTripModal extends StatefulWidget {
 class _NewTripModalState extends State<NewTripModal> {
   final _formKey = GlobalKey<FormState>();
   final _routeController = TextEditingController(text: 'أدرار ⟵ بشار');
-  final _passengersController = TextEditingController(text: '48');
-  final _revenueController = TextEditingController(text: '62400');
+  final _manualDriverController = TextEditingController();
+  final _passengersController = TextEditingController(text: '45');
+  final _revenueController = TextEditingController(text: '58500');
   final _driverWageController = TextEditingController(text: '4000');
 
-  int _selectedDriverIndex = 0;
+  int? _selectedDriverIndex;
   String _selectedBus = 'مرسيدس ترافيكو (00142-120-47)';
 
   final List<String> _busList = [
@@ -35,8 +36,19 @@ class _NewTripModalState extends State<NewTripModal> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.drivers.isNotEmpty) {
+      _selectedDriverIndex = 0;
+    } else {
+      _manualDriverController.text = 'سائق المؤسسة';
+    }
+  }
+
+  @override
   void dispose() {
     _routeController.dispose();
+    _manualDriverController.dispose();
     _passengersController.dispose();
     _revenueController.dispose();
     _driverWageController.dispose();
@@ -49,21 +61,24 @@ class _NewTripModalState extends State<NewTripModal> {
       final revenue = double.tryParse(_revenueController.text) ?? 50000;
       final wage = double.tryParse(_driverWageController.text) ?? 4000;
 
-      final driver = widget.drivers[_selectedDriverIndex];
+      final String driverName = (widget.drivers.isNotEmpty && _selectedDriverIndex != null)
+          ? widget.drivers[_selectedDriverIndex!].name
+          : _manualDriverController.text.trim();
 
       final newTrip = TripModel(
         id: 'TRIP-${DateTime.now().millisecondsSinceEpoch % 10000}',
         route: _routeController.text.trim(),
         busPlate: _selectedBus.split('(').last.replaceAll(')', ''),
-        driverName: driver.name,
+        driverName: driverName.isNotEmpty ? driverName : 'سائق غير معيّن',
         passengers: passengers,
         ticketRevenue: revenue,
         driverWage: wage,
         date: DateTime.now(),
-        status: 'مكتملة',
+        status: 'مجدولة',
       );
 
-      widget.onTripAdded(newTrip, _selectedDriverIndex);
+      final int driverIndexToPass = _selectedDriverIndex ?? 0;
+      widget.onTripAdded(newTrip, driverIndexToPass);
       Navigator.of(context).pop();
     }
   }
@@ -98,12 +113,13 @@ class _NewTripModalState extends State<NewTripModal> {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: AppColors.orangeLight,
+                          color: AppColors.blueLight,
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.borderBlue),
                         ),
                         child: const Icon(
-                          Icons.add_road_rounded,
-                          color: AppColors.accentOrange,
+                          Icons.alt_route_rounded,
+                          color: AppColors.accentBlue,
                           size: 20,
                         ),
                       ),
@@ -112,17 +128,17 @@ class _NewTripModalState extends State<NewTripModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            'تسجيل رحلة جديدة',
+                            'برمجة رحلة جديدة',
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 16,
                               fontWeight: FontWeight.w900,
                               color: AppColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'حساب إيراد التذاكر وأجرة السائق مباشرة (بدون وقود)',
+                            'تسجيل خط سير حافلة مع السائق والمستحقات',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 11,
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -149,24 +165,31 @@ class _NewTripModalState extends State<NewTripModal> {
               ),
               const SizedBox(height: 12),
 
-              // Driver Dropdown (from Active Drivers)
-              DropdownButtonFormField<int>(
-                value: _selectedDriverIndex,
-                decoration: _inputDecoration('السائق المسؤول', Icons.person_outline),
-                items: List.generate(widget.drivers.length, (idx) {
-                  final d = widget.drivers[idx];
-                  return DropdownMenuItem<int>(
-                    value: idx,
-                    child: Text(
-                      '${d.name} (${d.assignedBus})',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                    ),
-                  );
-                }),
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedDriverIndex = val);
-                },
-              ),
+              // Driver Selector (Dropdown if drivers exist, or text field if empty)
+              if (widget.drivers.isNotEmpty)
+                DropdownButtonFormField<int>(
+                  value: _selectedDriverIndex,
+                  decoration: _inputDecoration('السائق المسؤول', Icons.person_outline),
+                  items: List.generate(widget.drivers.length, (idx) {
+                    final d = widget.drivers[idx];
+                    return DropdownMenuItem<int>(
+                      value: idx,
+                      child: Text(
+                        '${d.name} (${d.assignedBus})',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    );
+                  }),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedDriverIndex = val);
+                  },
+                )
+              else
+                TextFormField(
+                  controller: _manualDriverController,
+                  decoration: _inputDecoration('اسم السائق (لا يوجد سائقون مسجلون بعد)', Icons.person_outline),
+                  validator: (val) => val == null || val.isEmpty ? 'يرجى إدخال اسم السائق' : null,
+                ),
               const SizedBox(height: 12),
 
               // Bus Dropdown
@@ -230,15 +253,15 @@ class _NewTripModalState extends State<NewTripModal> {
                 onPressed: _submit,
                 icon: const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
                 label: const Text(
-                  'حفظ الرحلة وتحديث الحساب اليومي',
+                  'حفظ وبرمجة الرحلة الآن',
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentOrange,
+                  backgroundColor: AppColors.accentBlue,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -257,7 +280,7 @@ class _NewTripModalState extends State<NewTripModal> {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-      prefixIcon: Icon(icon, size: 18, color: AppColors.accentOrange),
+      prefixIcon: Icon(icon, size: 18, color: AppColors.accentBlue),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       filled: true,
       fillColor: AppColors.surfaceLight,
@@ -271,7 +294,7 @@ class _NewTripModalState extends State<NewTripModal> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.accentOrange, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.accentBlue, width: 1.5),
       ),
     );
   }

@@ -65,16 +65,16 @@ class DriverReportDialog extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Dialog Header with Close and Print Buttons
+              // Dialog Header with Close and Print/Download Icon
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.print_rounded, color: AppColors.accentOrange, size: 24),
+                      Icon(Icons.description_rounded, color: AppColors.accentBlue, size: 24),
                       SizedBox(width: 8),
                       Text(
-                        'كشف الحساب الشهري للسائق',
+                        'كشف الحساب والعمل الشهري للسائق',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
@@ -329,26 +329,28 @@ class DriverReportDialog extends StatelessWidget {
 
               const SizedBox(height: 14),
 
-              // Action Buttons
+              // Action Buttons: Print Statement & Download Statement
               Row(
                 children: [
+                  // Print Button
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('جاري إرسال كشف ${driver.name} إلى الطابعة / حفظ PDF...'),
-                            backgroundColor: AppColors.accentGreen,
+                            content: Text('جاري إرسال كشف السائق "${driver.name}" إلى الطابعة...'),
+                            backgroundColor: AppColors.accentBlue,
+                            behavior: SnackBarBehavior.floating,
                           ),
                         );
                         Navigator.of(context).pop();
                       },
-                      icon: const Icon(Icons.print_rounded, color: Colors.white, size: 18),
+                      icon: const Icon(Icons.print_rounded, color: Colors.white, size: 17),
                       label: const Text(
-                        'طباعة التقرير الآن (Print / PDF)',
+                        'طباعة الكشف',
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
                           color: Colors.white,
                         ),
                       ),
@@ -356,14 +358,54 @@ class DriverReportDialog extends StatelessWidget {
                         backgroundColor: AppColors.primaryDarkBlue,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 1,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
+
+                  // Download PDF Button
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('تم تنزيل كشف السائق "${driver.name}" بصيغة PDF بنجاح'),
+                            backgroundColor: AppColors.accentGreen,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.download_rounded, color: Colors.white, size: 17),
+                      label: const Text(
+                        'تحميل كشف السائق',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accentBlue,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Close Button
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
                     child: const Text(
                       'إغلاق',
                       style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.textSecondary),

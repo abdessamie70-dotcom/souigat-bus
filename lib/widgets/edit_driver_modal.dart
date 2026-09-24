@@ -3,13 +3,13 @@ import '../models/driver_model.dart';
 import '../theme/app_colors.dart';
 
 class EditDriverModal extends StatefulWidget {
-  final DriverModel driver;
-  final Function(DriverModel updatedDriver) onDriverUpdated;
+  final DriverModel? driver; // Null if adding a new driver
+  final Function(DriverModel savedDriver) onDriverSaved;
 
   const EditDriverModal({
     super.key,
-    required this.driver,
-    required this.onDriverUpdated,
+    this.driver,
+    required this.onDriverSaved,
   });
 
   @override
@@ -26,6 +26,8 @@ class _EditDriverModalState extends State<EditDriverModal> {
   late TextEditingController _wageController;
   late ShiftPattern _selectedPattern;
 
+  bool get isEditing => widget.driver != null;
+
   final List<String> _suggestedBuses = [
     '00142-120-47 (مرسيدس ترافيكو)',
     '00891-121-47 (مان ليونز كوتش)',
@@ -36,12 +38,16 @@ class _EditDriverModalState extends State<EditDriverModal> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.driver.name);
-    _phoneController = TextEditingController(text: widget.driver.phone);
-    _busController = TextEditingController(text: widget.driver.assignedBus);
-    _licenseController = TextEditingController(text: widget.driver.licenseType);
-    _wageController = TextEditingController(text: widget.driver.dailyWage.toInt().toString());
-    _selectedPattern = widget.driver.currentPattern;
+    _nameController = TextEditingController(text: widget.driver?.name ?? '');
+    _phoneController = TextEditingController(text: widget.driver?.phone ?? '');
+    _busController = TextEditingController(text: widget.driver?.assignedBus ?? '');
+    _licenseController = TextEditingController(
+      text: widget.driver?.licenseType ?? 'صنف د (نقل عمومي)',
+    );
+    _wageController = TextEditingController(
+      text: widget.driver != null ? widget.driver!.dailyWage.toInt().toString() : '4000',
+    );
+    _selectedPattern = widget.driver?.currentPattern ?? ShiftPattern.dayByDay;
   }
 
   @override
@@ -54,20 +60,34 @@ class _EditDriverModalState extends State<EditDriverModal> {
     super.dispose();
   }
 
-  void _saveChanges() {
+  void _saveDriver() {
     if (_formKey.currentState?.validate() ?? false) {
-      final double newWage = double.tryParse(_wageController.text) ?? widget.driver.dailyWage;
+      final double wage = double.tryParse(_wageController.text) ?? 4000;
 
-      widget.driver.updateDetails(
-        newName: _nameController.text.trim(),
-        newPhone: _phoneController.text.trim(),
-        newLicenseType: _licenseController.text.trim(),
-        newAssignedBus: _busController.text.trim(),
-        newDailyWage: newWage,
-        newPattern: _selectedPattern,
-      );
+      if (isEditing) {
+        widget.driver!.updateDetails(
+          newName: _nameController.text.trim(),
+          newPhone: _phoneController.text.trim(),
+          newLicenseType: _licenseController.text.trim(),
+          newAssignedBus: _busController.text.trim(),
+          newDailyWage: wage,
+          newPattern: _selectedPattern,
+        );
+        widget.onDriverSaved(widget.driver!);
+      } else {
+        final newDriver = DriverModel(
+          id: 'DRV-${DateTime.now().millisecondsSinceEpoch % 10000}',
+          name: _nameController.text.trim(),
+          phone: _phoneController.text.trim(),
+          assignedBus: _busController.text.trim(),
+          licenseType: _licenseController.text.trim(),
+          dailyWage: wage,
+          currentPattern: _selectedPattern,
+        );
+        newDriver.monthlyAttendance[DateTime.now().day] = AttendanceStatus.work;
+        widget.onDriverSaved(newDriver);
+      }
 
-      widget.onDriverUpdated(widget.driver);
       Navigator.of(context).pop();
     }
   }
@@ -102,34 +122,40 @@ class _EditDriverModalState extends State<EditDriverModal> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryDarkBlue,
+                          color: AppColors.accentBlue,
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primaryDarkBlue.withOpacity(0.3),
+                              color: AppColors.accentBlue.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Icon(Icons.person_outline_rounded, color: Colors.white, size: 22),
+                        child: Center(
+                          child: Icon(
+                            isEditing ? Icons.edit_rounded : Icons.person_add_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'تعديل بيانات السائق',
-                            style: TextStyle(
+                          Text(
+                            isEditing ? 'تعديل بيانات السائق' : 'إضافة سائق جديد',
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                               color: AppColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'مؤسسة سويقات أبو طالب • ${widget.driver.id}',
+                            isEditing
+                                ? 'مؤسسة سويقات • ${widget.driver!.id}'
+                                : 'تسجيل سائق جديد في أسطول المؤسسة',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -158,7 +184,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
                 decoration: InputDecoration(
                   labelText: 'اسم السائق الكامل',
                   hintText: 'مثال: محمد بلقاسم',
-                  prefixIcon: const Icon(Icons.badge_rounded, color: AppColors.primaryDarkBlue, size: 20),
+                  prefixIcon: const Icon(Icons.badge_rounded, color: AppColors.accentBlue, size: 20),
                   filled: true,
                   fillColor: AppColors.backgroundLight,
                   border: OutlineInputBorder(
@@ -171,7 +197,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.accentOrange, width: 1.5),
+                    borderSide: const BorderSide(color: AppColors.accentBlue, width: 1.5),
                   ),
                 ),
                 validator: (val) {
@@ -204,7 +230,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.accentOrange, width: 1.5),
+                    borderSide: const BorderSide(color: AppColors.accentBlue, width: 1.5),
                   ),
                 ),
                 validator: (val) {
@@ -223,7 +249,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
                 decoration: InputDecoration(
                   labelText: 'رقم الحافلة المخصصة',
                   hintText: 'مثال: 00142-120-47',
-                  prefixIcon: const Icon(Icons.directions_bus_rounded, color: AppColors.accentOrange, size: 20),
+                  prefixIcon: const Icon(Icons.directions_bus_rounded, color: AppColors.accentBlue, size: 20),
                   filled: true,
                   fillColor: AppColors.backgroundLight,
                   border: OutlineInputBorder(
@@ -236,7 +262,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.accentOrange, width: 1.5),
+                    borderSide: const BorderSide(color: AppColors.accentBlue, width: 1.5),
                   ),
                 ),
                 validator: (val) {
@@ -259,8 +285,8 @@ class _EditDriverModalState extends State<EditDriverModal> {
                       plate,
                       style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
                     ),
-                    backgroundColor: AppColors.surfaceLight,
-                    side: const BorderSide(color: AppColors.borderLight),
+                    backgroundColor: AppColors.blueLight,
+                    side: const BorderSide(color: AppColors.borderBlue),
                     onPressed: () {
                       setState(() {
                         _busController.text = plate;
@@ -331,7 +357,7 @@ class _EditDriverModalState extends State<EditDriverModal> {
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(color: AppColors.borderBlue),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,15 +388,15 @@ class _EditDriverModalState extends State<EditDriverModal> {
                                 duration: const Duration(milliseconds: 150),
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? AppColors.primaryDarkBlue : Colors.white,
+                                  color: isSelected ? AppColors.accentBlue : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: isSelected ? AppColors.primaryDarkBlue : AppColors.borderLight,
+                                    color: isSelected ? AppColors.accentBlue : AppColors.borderLight,
                                   ),
                                   boxShadow: isSelected
                                       ? [
                                           BoxShadow(
-                                            color: AppColors.primaryDarkBlue.withOpacity(0.25),
+                                            color: AppColors.accentBlue.withValues(alpha: 0.25),
                                             blurRadius: 6,
                                             offset: const Offset(0, 2),
                                           )
@@ -405,23 +431,23 @@ class _EditDriverModalState extends State<EditDriverModal> {
                   Expanded(
                     flex: 3,
                     child: ElevatedButton.icon(
-                      onPressed: _saveChanges,
+                      onPressed: _saveDriver,
                       icon: const Icon(Icons.check_rounded, color: Colors.white, size: 18),
-                      label: const Text(
-                        'حفظ بيانات السائق',
-                        style: TextStyle(
+                      label: Text(
+                        isEditing ? 'حفظ بيانات السائق' : 'إضافة وتثبيت السائق',
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentOrange,
+                        backgroundColor: AppColors.accentBlue,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        elevation: 3,
+                        elevation: 2,
                       ),
                     ),
                   ),

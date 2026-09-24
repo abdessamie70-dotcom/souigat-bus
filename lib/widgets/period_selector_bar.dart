@@ -154,12 +154,24 @@ class PeriodSelectorBar extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                       color: AppColors.textPrimary,
                     ),
-                    items: [2024, 2025, 2026, 2027].map((y) {
-                      return DropdownMenuItem<int>(
-                        value: y,
-                        child: Text('$y'),
-                      );
-                    }).toList(),
+                    items: () {
+                      final currentDeviceYear = DateTime.now().year;
+                      final yearsSet = <int>{
+                        currentDeviceYear - 2,
+                        currentDeviceYear - 1,
+                        currentDeviceYear,
+                        currentDeviceYear + 1,
+                        currentDeviceYear + 2,
+                        currentYear,
+                      };
+                      final sortedYears = yearsSet.toList()..sort();
+                      return sortedYears.map((y) {
+                        return DropdownMenuItem<int>(
+                          value: y,
+                          child: Text('$y'),
+                        );
+                      }).toList();
+                    }(),
                     onChanged: (val) {
                       if (val != null) onPeriodChanged(currentMonth, val);
                     },

@@ -30,10 +30,10 @@ class _EditDriverModalState extends State<EditDriverModal> {
   bool get isEditing => widget.driver != null;
 
   final List<String> _suggestedBuses = [
-    '00142-120-47 (مرسيدس ترافيكو)',
-    '00891-121-47 (مان ليونز كوتش)',
-    '01204-122-47 (سوناكوم سفر)',
-    '00552-118-47 (فولفو 9700)',
+    '00142-120-47',
+    '00891-121-47',
+    '01204-122-47',
+    '00552-118-47',
   ];
 
   @override

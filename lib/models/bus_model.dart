@@ -10,7 +10,7 @@ class BusModel {
   const BusModel({
     required this.id,
     required this.plateNumber,
-    required this.modelName,
+    this.modelName = '',
     this.capacity = 50,
     required this.status,
     required this.mileageKm,
@@ -22,7 +22,6 @@ class BusModel {
       BusModel(
         id: 'BUS-01',
         plateNumber: '00142-120-47',
-        modelName: 'مرسيدس ترافيكو توريزمو',
         capacity: 50,
         status: 'جاهزة للخدمة',
         mileageKm: 142500,
@@ -31,7 +30,6 @@ class BusModel {
       BusModel(
         id: 'BUS-02',
         plateNumber: '00891-121-47',
-        modelName: 'مان ليونز كوتش فاخرة',
         capacity: 50,
         status: 'في رحلة',
         mileageKm: 98400,
@@ -40,7 +38,6 @@ class BusModel {
       BusModel(
         id: 'BUS-03',
         plateNumber: '00552-118-47',
-        modelName: 'سوناكوم نوميديا 100 V8',
         capacity: 50,
         status: 'صيانة دورية',
         mileageKm: 215300,
@@ -49,7 +46,6 @@ class BusModel {
       BusModel(
         id: 'BUS-04',
         plateNumber: '01204-122-47',
-        modelName: 'فولفو 9700 سياحية',
         capacity: 50,
         status: 'جاهزة للخدمة',
         mileageKm: 64200,

@@ -27,7 +27,7 @@ class TripModel {
     required this.status,
     this.departureTime = '08:00 ص',
     this.arrivalTime = '16:00 م',
-    this.busModel = 'مرسيدس ترافيكو',
+    this.busModel = '',
   }) : _customRevenue = ticketRevenue;
 
   final double? _customRevenue;
@@ -85,7 +85,6 @@ class TripModel {
         id: 'TRIP-101',
         route: 'أدرار ⟵ الجزائر العاصمة',
         busPlate: '00142-120-47',
-        busModel: 'مرسيدس ترافيكو',
         driverName: 'محمد بلقاسم',
         passengers: 48,
         ticketRevenue: 65000,
@@ -99,7 +98,6 @@ class TripModel {
         id: 'TRIP-102',
         route: 'غرداية ⟵ وهران',
         busPlate: '00891-121-47',
-        busModel: 'مان ليونز كوتش',
         driverName: 'إبراهيم تواتي',
         passengers: 50,
         ticketRevenue: 52800,
@@ -113,7 +111,6 @@ class TripModel {
         id: 'TRIP-103',
         route: 'ورقلة ⟵ قسنطينة',
         busPlate: '01204-122-47',
-        busModel: 'سوناكوم سفر',
         driverName: 'أحمد سعيدي',
         passengers: 46,
         ticketRevenue: 55200,
@@ -127,7 +124,6 @@ class TripModel {
         id: 'TRIP-104',
         route: 'تمنراست ⟵ أدرار',
         busPlate: '00552-118-47',
-        busModel: 'فولفو سياحية',
         driverName: 'عبد القادر مرابط',
         passengers: 44,
         ticketRevenue: 55000,
@@ -141,7 +137,6 @@ class TripModel {
         id: 'TRIP-105',
         route: 'الجزائر العاصمة ⟵ بسكرة',
         busPlate: '00142-120-47',
-        busModel: 'مرسيدس توريزمو',
         driverName: 'ياسين بن علي',
         passengers: 49,
         ticketRevenue: 60000,

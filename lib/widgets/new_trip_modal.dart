@@ -27,13 +27,13 @@ class _NewTripModalState extends State<NewTripModal> {
   final _driverWageController = TextEditingController(text: '4000');
 
   int? _selectedDriverIndex;
-  String _selectedBus = 'مرسيدس ترافيكو (00142-120-47)';
+  String _selectedBus = '00142-120-47';
 
   final List<String> _busList = [
-    'مرسيدس ترافيكو (00142-120-47)',
-    'مان ليونز كوتش (00891-121-47)',
-    'سوناكوم نوميديا (00552-118-47)',
-    'فولفو سياحية (01204-122-47)',
+    '00142-120-47',
+    '00891-121-47',
+    '00552-118-47',
+    '01204-122-47',
   ];
 
   @override
@@ -82,7 +82,7 @@ class _NewTripModalState extends State<NewTripModal> {
       final newTrip = TripModel(
         id: 'TRIP-${DateTime.now().millisecondsSinceEpoch % 10000}',
         route: _routeController.text.trim(),
-        busPlate: _selectedBus.split('(').last.replaceAll(')', ''),
+        busPlate: _selectedBus.contains('(') ? _selectedBus.split('(').last.replaceAll(')', '').trim() : _selectedBus.trim(),
         driverName: driverName.isNotEmpty ? driverName : 'سائق غير معيّن',
         passengers: passengers,
         seatPrice: seatPrice,

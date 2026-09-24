@@ -28,9 +28,17 @@ class AttendanceWagesScreen extends StatefulWidget {
 }
 
 class _AttendanceWagesScreenState extends State<AttendanceWagesScreen> {
-  int _selectedMonth = 9;
-  int _selectedYear = 2026;
+  late int _selectedMonth;
+  late int _selectedYear;
   int _selectedDriverIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedMonth = now.month;
+    _selectedYear = now.year;
+  }
 
   void _openAddDriverModal() {
     showModalBottomSheet(

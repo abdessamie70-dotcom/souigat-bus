@@ -111,26 +111,33 @@ class TodayTripCard extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceLight,
+                              color: AppColors.blueLight,
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.borderLight),
+                              border: Border.all(color: AppColors.borderBlue),
                             ),
-                            child: const Text(
-                              'حافلة سياحية',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.accentOrange,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.directions_bus_rounded, size: 11, color: AppColors.accentBlue),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'حافلة: ${trip.busPlate}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.accentBlue,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            trip.busModel.isNotEmpty ? trip.busModel : 'حافلة كبرى',
-                            style: const TextStyle(
-                              fontSize: 11,
+                          const Text(
+                            'سعة 50 مقعد',
+                            style: TextStyle(
+                              fontSize: 10,
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
                             ),

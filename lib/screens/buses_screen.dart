@@ -110,7 +110,7 @@ class BusesScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            bus.modelName,
+                            'حافلة: ${bus.plateNumber}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
@@ -119,7 +119,7 @@ class BusesScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'الترقيم: ${bus.plateNumber} • السعة: ${bus.capacity} مقعد',
+                            'السعة: ${bus.capacity} مقعد • المعرّف: ${bus.id}',
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppColors.textSecondary,

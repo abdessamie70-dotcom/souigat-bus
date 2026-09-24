@@ -39,12 +39,31 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedMonth = 9;
-  int _selectedYear = 2026;
-  int _selectedDay = 24;
+  late int _selectedMonth;
+  late int _selectedYear;
+  late int _selectedDay;
 
   String _driverFilter = 'working'; // 'working', 'all', 'rest'
   String _tripFilter = 'all'; // 'all', 'في الطريق', 'مجدولة', 'مكتملة'
+
+  static const List<String> _weekdayNames = [
+    'الإثنين',
+    'الثلاثاء',
+    'الأربعاء',
+    'الخميس',
+    'الجمعة',
+    'السبت',
+    'الأحد'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedDay = now.day;
+    _selectedMonth = now.month;
+    _selectedYear = now.year;
+  }
 
   void _openNewTripModal() {
     showModalBottomSheet(
@@ -347,13 +366,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              'اليوم: $_selectedDay سبتمبر $_selectedYear • جدول التشغيل',
-                              style: const TextStyle(
-                                color: Color(0xFFCBD5E1),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final int safeDay = _selectedDay.clamp(1, DateTime(_selectedYear, _selectedMonth + 1, 0).day);
+                                final currentDate = DateTime(_selectedYear, _selectedMonth, safeDay);
+                                final weekdayName = _weekdayNames[currentDate.weekday - 1];
+                                final monthName = PeriodSelectorBar.monthShortNames[_selectedMonth];
+                                return Text(
+                                  'اليوم: $weekdayName $_selectedDay $monthName $_selectedYear • جدول التشغيل',
+                                  style: const TextStyle(
+                                    color: Color(0xFFCBD5E1),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),

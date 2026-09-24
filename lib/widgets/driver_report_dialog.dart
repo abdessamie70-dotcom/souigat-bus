@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/driver_model.dart';
+import '../services/pdf_report_service.dart';
 import '../theme/app_colors.dart';
 
 class DriverReportDialog extends StatelessWidget {
@@ -52,6 +53,9 @@ class DriverReportDialog extends StatelessWidget {
     final int workDays = driver.workDaysCount;
     final int restDays = driver.restDaysCount;
     final int absenceDays = driver.absenceDaysCount;
+    final String cleanBus = driver.assignedBus.contains('(')
+        ? driver.assignedBus.split('(').first.trim()
+        : driver.assignedBus.trim();
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -162,7 +166,7 @@ class DriverReportDialog extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              _infoRow('اسم السائق:', driver.name, 'الحافلة المسندة:', driver.assignedBus),
+                              _infoRow('اسم السائق:', driver.name, 'الحافلة المسندة:', cleanBus),
                               const SizedBox(height: 6),
                               _infoRow('رقم الهاتف:', driver.phone, 'رخصة السياقة:', driver.licenseType),
                               const SizedBox(height: 6),
@@ -345,16 +349,12 @@ class DriverReportDialog extends StatelessWidget {
                   // Print Button
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('جاري إرسال كشف السائق "${driver.name}" إلى الطابعة...'),
-                            backgroundColor: AppColors.accentBlue,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: () => PdfReportService.printDriverReport(
+                        context: context,
+                        driver: driver,
+                        month: month,
+                        year: year,
+                      ),
                       icon: const Icon(Icons.print_rounded, color: Colors.white, size: 17),
                       label: const Text(
                         'طباعة الكشف',
@@ -379,16 +379,12 @@ class DriverReportDialog extends StatelessWidget {
                   // Download PDF Button
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('تم تنزيل كشف السائق "${driver.name}" بصيغة PDF بنجاح'),
-                            backgroundColor: AppColors.accentGreen,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: () => PdfReportService.downloadDriverReport(
+                        context: context,
+                        driver: driver,
+                        month: month,
+                        year: year,
+                      ),
                       icon: const Icon(Icons.download_rounded, color: Colors.white, size: 17),
                       label: const Text(
                         'تحميل كشف السائق',

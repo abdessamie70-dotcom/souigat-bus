@@ -1,0 +1,62 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Upload Release APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: souigat-bus-apk-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0
+          name: "مؤسسة سويقات أبو طالب - الإصدار 1.0.0"
+          body: |
+            ### 🚌 تطبيق مؤسسة سويقات أبو طالب لنقل المسافرين
+            
+            نسخة التثبيت الرسمية الجاهزة لهواتف أندرويد (APK Release):
+            * الشعار والأيقونة الرسمية للتطبيق.
+            * الرحلات المبرمجة اليوم والسائقون العاملون.
+            * نظام حضور وأجور السائقين والمناوبات.
+            * طباعة كشوف الحساب الرسمية للسائقين.
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
